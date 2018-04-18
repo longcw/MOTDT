@@ -1,0 +1,11 @@
+numpy
+h5py
+Cython
+scipy
+torch>=0.3.1
+opencv-python
+cffi
+sklearn
+numba
+torchvision
+fire

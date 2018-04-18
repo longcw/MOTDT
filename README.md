@@ -2,7 +2,12 @@
 
 ### Usage
 Download MOT16 dataset and trained weights from the following links.
-Put weight files in `data` and run `eval_mot.py`. 
+Put weight files in `data`, then build and run the code. 
+```bash
+pip install -r requirements.txt
+sh make.sh
+python eval_mot.py
+```
 
 I used five of six training sequences as the validation set.
 Following are the details and evaluation results. 

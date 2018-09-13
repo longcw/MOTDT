@@ -81,7 +81,7 @@ MOT16-13
 
 ### Resources
 
-Paper: Real-time Multiple People Tracking with Deeply Learned Candidate Selection and Person Re-identification ([link](https://www.researchgate.net/publication/326224594_Real-time_Multiple_People_Tracking_with_Deeply_Learned_Candidate_Selection_and_Person_Re-identification))
+Paper: Real-time Multiple People Tracking with Deeply Learned Candidate Selection and Person Re-identification ([researchgate](https://www.researchgate.net/publication/326224594_Real-time_Multiple_People_Tracking_with_Deeply_Learned_Candidate_Selection_and_Person_Re-identification), [arxiv](https://arxiv.org/abs/1809.04427))
 
 Results on the test set: https://motchallenge.net/tracker/MOTDT
 

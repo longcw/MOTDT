@@ -39,7 +39,7 @@ class Model(nn.Module):
                         nn.Conv2d(in_channels, out_channels, 3, padding=1, bias=True),
                         nn.BatchNorm2d(out_channels),
                         nn.ReLU(inplace=True),
-                        nn.Upsample(scale_factor=2, mode='bilinear'),
+                        nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
                     ))
 
             feat_channels = n_feats[-1-i]
@@ -75,7 +75,7 @@ class Model(nn.Module):
         # rois = rois / 8.
         cls_scores = self.psroipool_cls(cls_feat, rois)
         cls_scores = self.avg_pool(cls_scores).view(-1)
-        cls_probs = F.sigmoid(cls_scores)
+        cls_probs = torch.sigmoid(cls_scores)
         return cls_scores, cls_probs
 
     def get_cls_score_numpy(self, cls_feat, rois):
@@ -95,7 +95,7 @@ class Model(nn.Module):
 
         cls_scores = self.psroipool_cls(cls_feat, _rois)
         cls_scores = self.avg_pool(cls_scores).view(-1)
-        cls_probs = F.sigmoid(cls_scores).data.cpu().numpy()
+        cls_probs = torch.sigmoid(cls_scores).data.cpu().numpy()
 
         return cls_probs
 

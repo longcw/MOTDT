@@ -23,7 +23,7 @@ class Model(nn.Module):
         feature = self.feat_conv(x)
         feature = self.conv_input_feat(feature)
 
-        att_weights = F.sigmoid(self.conv_att(feature))
+        att_weights = torch.sigmoid(self.conv_att(feature))
 
         linear_feautres = []
         for i in range(self.n_parts):

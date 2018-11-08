@@ -4,6 +4,7 @@ from distutils.version import LooseVersion
 import torch
 from torch.autograd import Variable
 
+from utils import bbox as bbox_utils
 from models import net_utils
 from models.classification.rfcn_cls import Model as CLSModel
 
@@ -75,6 +76,7 @@ class PatchClassifier(object):
         im_croped, im_pad, real_shape, im_scale = self.im_preprocess(image)
 
         self.im_scale = im_scale
+        self.ori_image_shape = image.shape
         im_data = torch.from_numpy(im_croped).permute(2, 0, 1)
         im_data = im_data.unsqueeze(0)
 
@@ -95,4 +97,15 @@ class PatchClassifier(object):
         :return: scores [N]
         """
         scaled_rois = rois * self.im_scale
-        return self.model.get_cls_score_numpy(self.score_map, scaled_rois)
+        cls_scores = self.model.get_cls_score_numpy(self.score_map, scaled_rois)
+
+        # check area
+        rois = rois.reshape(-1, 4)
+        clipped_boxes = bbox_utils.clip_boxes(rois, self.ori_image_shape)
+
+        ori_areas = (rois[:, 2] - rois[:, 0]) * (rois[:, 3] - rois[:, 1])
+        areas = (clipped_boxes[:, 2] - clipped_boxes[:, 0]) * (clipped_boxes[:, 3] - clipped_boxes[:, 1])
+        ratios = areas / np.clip(ori_areas, a_min=1e-4, a_max=None)
+        cls_scores[ratios < 0.5] = 0
+
+        return cls_scores

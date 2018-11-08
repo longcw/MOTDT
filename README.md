@@ -79,6 +79,22 @@ MOT16-13
  45.7 74.4 33.0| 40.5  91.4  0.53|  380  48  172  160|  1915 30072   192   594|  36.3  75.9  36.7
 ```
 
+### Evaluate
+You can use official [matlab eval devkit](https://bitbucket.org/amilan/motchallenge-devkit/) to evaluate the outputs.
+Or directly use the python version [motmetrics](https://github.com/cheind/py-motmetrics).
+I already added the python evaluation method in the `eval_mot.py` script.
+The results are slightly different from the official devkit since the ignoring method is not identical.
+Results from python evaluation:
+```
+          IDF1   IDP   IDR  Rcll  Prcn  GT MT  PT  ML   FP    FN IDs   FM  MOTA  MOTP
+MOT16-02 37.1% 75.6% 24.6% 30.2% 93.0%  54  7  21  26  406 12440  47  146 27.7% 0.247
+MOT16-05 53.7% 83.0% 39.7% 44.6% 93.1% 125 13  68  44  224  3779  35  130 40.8% 0.242
+MOT16-09 61.1% 75.8% 51.1% 63.6% 94.3%  25  8  15   2  202  1913  28   64 59.2% 0.247
+MOT16-11 54.9% 72.2% 44.3% 58.1% 94.7%  69 12  28  29  301  3840  27   70 54.6% 0.208
+MOT16-13 38.2% 71.6% 26.0% 29.7% 81.6% 107 11  38  58  766  8051  46  178 22.6% 0.276
+OVERALL  46.1% 75.1% 33.3% 40.6% 91.5% 380 51 170 159 1899 30023 183  588 36.5% 0.241
+```
+
 ### Resources
 
 Paper: Real-time Multiple People Tracking with Deeply Learned Candidate Selection and Person Re-identification ([researchgate](https://www.researchgate.net/publication/326224594_Real-time_Multiple_People_Tracking_with_Deeply_Learned_Candidate_Selection_and_Person_Re-identification), [arxiv](https://arxiv.org/abs/1809.04427))

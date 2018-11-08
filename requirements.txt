@@ -9,3 +9,4 @@ sklearn
 numba
 torchvision
 fire
+motmetrics

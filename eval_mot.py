@@ -1,12 +1,14 @@
 import os
 import cv2
 import logging
+import motmetrics as mm
 from tracker.mot_tracker import OnlineTracker
 
 from datasets.mot_seq import get_loader
 from utils import visualization as vis
 from utils.log import logger
 from utils.timer import Timer
+from utils.evaluation import Evaluator
 
 
 def mkdirs(path):
@@ -92,13 +94,34 @@ def main(data_root='/data/MOT16/train', det_root=None,
     data_type = 'mot'
 
     # run tracking
+    accs = []
     for seq in seqs:
         output_dir = os.path.join(data_root, 'outputs', seq) if save_image else None
 
         logger.info('start seq: {}'.format(seq))
         loader = get_loader(data_root, det_root, seq)
-        eval_seq(loader, data_type, os.path.join(result_root, '{}.txt'.format(seq)),
+        result_filename = os.path.join(result_root, '{}.txt'.format(seq))
+        eval_seq(loader, data_type, result_filename,
                  save_dir=output_dir, show_image=show_image)
+
+        # eval
+        logger.info('Evaluate seq: {}'.format(seq))
+        evaluator = Evaluator(data_root, seq, data_type)
+        accs.append(evaluator.eval_file(result_filename))
+
+    # get summary
+    # metrics = ['mota', 'num_switches', 'idp', 'idr', 'idf1', 'precision', 'recall']
+    metrics = mm.metrics.motchallenge_metrics
+    # metrics = None
+    mh = mm.metrics.create()
+    summary = Evaluator.get_summary(accs, seqs, metrics)
+    strsummary = mm.io.render_summary(
+        summary,
+        formatters=mh.formatters,
+        namemap=mm.io.motchallenge_metric_names
+    )
+    print(strsummary)
+    Evaluator.save_summary(summary, os.path.join(result_root, f'summary_{exp_name}.xlsx'))
 
     # # eval
     # try:
@@ -119,17 +142,17 @@ def main(data_root='/data/MOT16/train', det_root=None,
 
 
 if __name__ == '__main__':
-    import fire
-    fire.Fire(main)
+    # import fire
+    # fire.Fire(main)
 
-    # seqs_str = '''MOT16-02
-    #             MOT16-05
-    #             MOT16-09
-    #             MOT16-11
-    #             MOT16-13'''
-    # seqs = [seq.strip() for seq in seqs_str.split()]
-    #
-    # main(data_root='/data/MOT16/train',
-    #      seqs=seqs,
-    #      exp_name='mot16_val',
-    #      show_image=True)
+    seqs_str = '''MOT16-02
+                MOT16-05
+                MOT16-09
+                MOT16-11
+                MOT16-13'''
+    seqs = [seq.strip() for seq in seqs_str.split()]
+
+    main(data_root='/data/MOT16/train',
+         seqs=seqs,
+         exp_name='mot16_val',
+         show_image=False)

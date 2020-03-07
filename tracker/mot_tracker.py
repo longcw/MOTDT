@@ -228,6 +228,13 @@ class OnlineTracker(object):
                 detections.extend(tracks)
             rois = np.asarray([d.tlbr for d in detections], dtype=np.float32)
 
+            # todo
+            # instead classifier with reid model to track faster.
+            # behind
+
+            cls_scores = matching.mean_reid_distance(self.tracked_stracks, detections)
+
+            # below
             cls_scores = self.classifier.predict(rois)
             scores = np.asarray([d.score for d in detections], dtype=np.float)
             scores[0:n_dets] = 1.

@@ -188,9 +188,9 @@ class OnlineTracker(object):
 
         self.kalman_filter = KalmanFilter()
 
-        self.tracked_stracks = []   # type: list[STrack]
-        self.lost_stracks = []      # type: list[STrack]
-        self.removed_stracks = []   # type: list[STrack]
+        self.tracked_stracks = []  # type: list[STrack]
+        self.lost_stracks = []  # type: list[STrack]
+        self.removed_stracks = []  # type: list[STrack]
 
         self.use_refind = use_refind
         self.use_tracking = use_tracking
@@ -228,36 +228,31 @@ class OnlineTracker(object):
                 detections.extend(tracks)
             rois = np.asarray([d.tlbr for d in detections], dtype=np.float32)
 
-            # todo
-            # instead classifier with reid model to track faster.
-            # behind
-
-            cls_scores = matching.mean_reid_distance(self.tracked_stracks, detections)
-
-            # below
-            cls_scores = self.classifier.predict(rois)
-            scores = np.asarray([d.score for d in detections], dtype=np.float)
-            scores[0:n_dets] = 1.
-            scores = scores * cls_scores
-            # nms
-            if len(detections) > 0:
-                keep = nms_detections(rois, scores.reshape(-1), nms_thresh=0.3)
-                mask = np.zeros(len(rois), dtype=np.bool)
-                mask[keep] = True
-                keep = np.where(mask & (scores >= self.min_cls_score))[0]
-                detections = [detections[i] for i in keep]
-                scores = scores[keep]
-                for d, score in zip(detections, scores):
-                    d.score = score
-            pred_dets = [d for d in detections if not d.from_det]
-            detections = [d for d in detections if d.from_det]
-
         # set features
         tlbrs = [det.tlbr for det in detections]
         features = extract_reid_features(self.reid_model, image, tlbrs)
         features = features.cpu().numpy()
         for i, det in enumerate(detections):
             det.set_feature(features[i])
+
+        """step 2.1: scoring by reid model"""
+        cls_scores = 1.0 - matching.mean_reid_distance(self.tracked_stracks, detections, metric='euclidean')
+
+        scores = np.asarray([d.score for d in detections], dtype=np.float)
+        scores[0:n_dets] = 1.
+        scores = scores * cls_scores
+        # nms
+        if len(detections) > 0:
+            keep = nms_detections(rois, scores.reshape(-1), nms_thresh=0.3)
+            mask = np.zeros(len(rois), dtype=np.bool)
+            mask[keep] = True
+            keep = np.where(mask & (scores >= self.min_cls_score))[0]
+            detections = [detections[i] for i in keep]
+            scores = scores[keep]
+            for d, score in zip(detections, scores):
+                d.score = score
+        pred_dets = [d for d in detections if not d.from_det]
+        detections = [d for d in detections if d.from_det]
 
         """step 3: association for tracked"""
         # matching for tracked targets

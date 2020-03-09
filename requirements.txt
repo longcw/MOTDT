@@ -1,12 +1,13 @@
 numpy
 h5py
 Cython
-scipy
-torch>=0.3.1
+scipy==1.2.1
+torch==0.4.1
 opencv-python
 cffi
 sklearn
 numba
-torchvision
+torchvision==0.2.1
 fire
 motmetrics
+pillow==6.2.2

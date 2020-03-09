@@ -188,9 +188,9 @@ class OnlineTracker(object):
 
         self.kalman_filter = KalmanFilter()
 
-        self.tracked_stracks = []   # type: list[STrack]
-        self.lost_stracks = []      # type: list[STrack]
-        self.removed_stracks = []   # type: list[STrack]
+        self.tracked_stracks = []  # type: list[STrack]
+        self.lost_stracks = []  # type: list[STrack]
+        self.removed_stracks = []  # type: list[STrack]
 
         self.use_refind = use_refind
         self.use_tracking = use_tracking
@@ -216,6 +216,14 @@ class OnlineTracker(object):
             det_scores = np.ones(len(tlwhs), dtype=float)
         detections = [STrack(tlwh, score, from_det=True) for tlwh, score in zip(tlwhs, det_scores)]
 
+        # set features
+        tlbrs = [det.tlbr for det in detections]
+        features = extract_reid_features(self.reid_model, image, tlbrs)
+        features = features.cpu().numpy()
+        for i, det in enumerate(detections):
+            det.set_feature(features[i])
+
+        """step 2.1: scoring by reid model"""
         if self.classifier is None:
             pred_dets = []
         else:
@@ -228,7 +236,8 @@ class OnlineTracker(object):
                 detections.extend(tracks)
             rois = np.asarray([d.tlbr for d in detections], dtype=np.float32)
 
-            cls_scores = self.classifier.predict(rois)
+            cls_scores = 1.0 - matching.mean_reid_distance(self.tracked_stracks, detections, metric='euclidean')
+
             scores = np.asarray([d.score for d in detections], dtype=np.float)
             scores[0:n_dets] = 1.
             scores = scores * cls_scores
@@ -244,13 +253,6 @@ class OnlineTracker(object):
                     d.score = score
             pred_dets = [d for d in detections if not d.from_det]
             detections = [d for d in detections if d.from_det]
-
-        # set features
-        tlbrs = [det.tlbr for det in detections]
-        features = extract_reid_features(self.reid_model, image, tlbrs)
-        features = features.cpu().numpy()
-        for i, det in enumerate(detections):
-            det.set_feature(features[i])
 
         """step 3: association for tracked"""
         # matching for tracked targets
